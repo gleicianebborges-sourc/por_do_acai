@@ -79,10 +79,10 @@ class CopilotController {
         `🤖 CopilotSkill processou ${parsedItems.length} item(ns) em ${data.executionTime}ms!`
       );
     } catch (err) {
-      alert(`Erro no Copilot: ${err.message}`);
+      alert(`Erro ao lançar itens: ${err.message}`);
     } finally {
       this.btnRun.disabled = false;
-      this.btnRun.innerHTML = '<span>⚡ Executar</span>';
+      this.btnRun.innerHTML = '<span>⚡ Lançar</span>';
     }
   }
 }

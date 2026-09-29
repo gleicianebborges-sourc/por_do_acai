@@ -127,17 +127,17 @@ body {
   font-weight: 700;
   padding: 0.4rem 0.95rem;
   border-radius: var(--radius-full);
-  background: rgba(129, 140, 248, 0.15);
-  color: #a5b4fc;
-  border: 1px solid rgba(129, 140, 248, 0.3);
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .pulse-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #818cf8;
-  box-shadow: 0 0 10px #818cf8;
+  background-color: #10b981;
+  box-shadow: 0 0 10px #10b981;
   animation: pulse 1.8s infinite;
 }
 

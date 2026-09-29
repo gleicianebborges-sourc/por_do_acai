@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Pôr do Açaí | PDV Agentic & Frente de Caixa</title>
-  <meta name="description" content="Sistema de Ponto de Venda (PDV) para Açaiteria com Teclado Numérico Touch, Copilot Natural Language e Camada de Execução Agentic (NFC-e e WhatsApp).">
+  <title>Pôr do Açaí | Frente de Caixa</title>
+  <meta name="description" content="Sistema de Ponto de Venda (PDV) para Açaiteria com Teclado Numérico Touch, Lançamento Rápido e Emissão de Cupom Fiscal NFC-e.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍧</text></svg>">
 </head>
@@ -16,51 +16,44 @@
       <span class="brand-icon">🍧</span>
       <div class="brand-titles">
         <h1 id="brand-title">PÔR DO AÇAÍ</h1>
-        <div class="brand-tagline">PDV Touch & Agentic Skill Layer</div>
+        <div class="brand-tagline">Frente de Caixa</div>
       </div>
     </div>
 
     <div class="header-status-group">
-      <div class="agent-orchestrator-badge" title="Orquestrador de Habilidades Agentic Conectado">
+      <div class="agent-orchestrator-badge" title="Sistema Conectado">
         <div class="pulse-dot"></div>
-        <span>Skill Orchestrator Ativo</span>
+        <span>Sistema Conectado</span>
       </div>
 
-      <button id="btn-open-agent-logs" class="header-btn" title="Ver logs de execução das skills">
-        <span>🤖</span> Logs Agentic
+      <button id="btn-open-agent-logs" class="header-btn" title="Registros de Auditoria">
+        <span>📋</span> Auditoria
       </button>
 
       <button id="btn-open-history" class="header-btn" title="Histórico de Vendas Realizadas">
-        <span>📋</span> Histórico
+        <span>🕒</span> Histórico
       </button>
     </div>
   </header>
 
-  <!-- ================= LIVE SKILL STATUS TICKER ================= -->
-  <div class="live-skill-ticker" id="live-skill-ticker-bar">
-    <span class="ticker-label">⚡ Live Skill Stream:</span>
-    <span class="ticker-content" id="live-skill-ticker-text">Pronto para operação. Aguardando comando no caixa...</span>
-  </div>
-
   <!-- ================= MAIN POS WORKSPACE ================= -->
   <main class="pos-workspace">
 
-    <!-- ========== LEFT SECTION: COPILOT, NUMPAD & FIXED PRODUCTS ========== -->
+    <!-- ========== LEFT SECTION: LANÇAMENTO RÁPIDO, NUMPAD & FIXED PRODUCTS ========== -->
     <section class="pos-left-section" aria-label="Entrada Rápida e Catálogo">
 
-      <!-- COPILOT NATURAL LANGUAGE COMMAND BAR -->
+      <!-- LANÇAMENTO RÁPIDO -->
       <article class="copilot-card">
         <div class="copilot-header">
           <div class="copilot-title">
-            <span>✨</span> Copilot Skill (Linguagem Natural / Atalhos de Caixa)
+            <span>⚡</span> Lançamento Rápido
           </div>
-          <span class="copilot-badge">AI Assistant</span>
         </div>
 
         <div class="copilot-input-row">
-          <input type="text" id="copilot-cmd-input" class="copilot-input" placeholder='Digite ou fale ex: "açaí 18.50 + coke", "2 aguas + acai 22"' autocomplete="off">
+          <input type="text" id="copilot-cmd-input" class="copilot-input" placeholder='Digite ex: "açaí 18.50 + coke", "2 aguas + acai 22"' autocomplete="off">
           <button id="btn-run-copilot" class="btn-copilot-run">
-            <span>⚡ Executar</span>
+            <span>⚡ Lançar</span>
           </button>
         </div>
 
@@ -168,7 +161,7 @@
             <span class="empty-icon">🥣</span>
             <div>
               <strong>Carrinho Vazio</strong>
-              <div style="font-size: 0.8rem; margin-top: 4px;">Digite o valor no numpad ou use o Copilot para adicionar itens.</div>
+              <div style="font-size: 0.8rem; margin-top: 4px;">Digite o valor no teclado ou use o Lançamento Rápido para adicionar itens.</div>
             </div>
           </div>
         </div>
@@ -203,7 +196,7 @@
   <div class="modal-overlay" id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="modal-checkout-title">
     <div class="modal-box">
       <div class="modal-header">
-        <h3 id="modal-checkout-title">💰 Finalizar Venda & Disparar Skills</h3>
+        <h3 id="modal-checkout-title">💰 Finalizar Venda</h3>
         <button class="btn-close-modal" id="btn-close-checkout" aria-label="Fechar">&times;</button>
       </div>
 
@@ -360,7 +353,7 @@
   <div class="modal-overlay" id="agent-logs-modal" role="dialog" aria-modal="true">
     <div class="modal-box" style="max-width: 650px;">
       <div class="modal-header">
-        <h3>🤖 Telemetria e Logs da Camada Agentic</h3>
+        <h3>📋 Registros de Auditoria</h3>
         <button class="btn-close-modal" id="btn-close-agent-logs">&times;</button>
       </div>
       <div class="modal-body">

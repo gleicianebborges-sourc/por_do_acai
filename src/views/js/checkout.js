@@ -135,7 +135,7 @@ class CheckoutModal {
 
     try {
       this.finalizeBtn.disabled = true;
-      this.finalizeBtn.innerHTML = `<span>⏳ Disparando Habilidades Agentic...</span>`;
+      this.finalizeBtn.innerHTML = `<span>⏳ Finalizando Venda...</span>`;
 
       const response = await fetch('/api/checkout', {
         method: 'POST',

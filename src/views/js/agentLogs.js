@@ -79,7 +79,7 @@ class AgentLogsController {
       if (!this.logsList) return;
 
       if (logs.length === 0) {
-        this.logsList.innerHTML = `<div style="text-align: center; color: #888; padding: 2rem;">Nenhuma execução de skill registrada ainda.</div>`;
+        this.logsList.innerHTML = `<div style="text-align: center; color: #888; padding: 2rem;">Nenhum registro de auditoria encontrado ainda.</div>`;
       } else {
         this.logsList.innerHTML = logs.map(l => {
           const statusColors = {

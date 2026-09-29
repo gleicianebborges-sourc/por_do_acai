@@ -1,6 +1,7 @@
 const { DatabaseSync } = require('node:sqlite');
 const path = require('node:path');
 const fs = require('node:fs');
+const bcrypt = require('bcryptjs');
 
 const dbDir = path.join(__dirname, '..', '..', 'data');
 if (!fs.existsSync(dbDir)) {
@@ -59,6 +60,36 @@ function initializeDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (sale_id) REFERENCES sales (id) ON DELETE SET NULL
     );
+
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      role TEXT NOT NULL CHECK(role IN ('operador', 'gerente')) DEFAULT 'operador',
+      is_active INTEGER NOT NULL DEFAULT 1,
+      lgpd_consent INTEGER NOT NULL DEFAULT 1,
+      lgpd_consent_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      token TEXT UNIQUE NOT NULL,
+      expires_at DATETIME NOT NULL,
+      is_used INTEGER NOT NULL DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_email TEXT NOT NULL,
+      action TEXT NOT NULL,
+      ip_address TEXT,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   // Check if products have the new columns or need re-seeding
@@ -106,6 +137,23 @@ function initializeDatabase() {
     for (const item of seedItems) {
       insertProduct.run(item.name, item.is_var, item.price, item.ncm, item.cat, item.emoji);
     }
+  }
+
+  // Seed default users (Manager & Cashier) if empty
+  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
+  if (userCount === 0) {
+    const insertUser = db.prepare(`
+      INSERT INTO users (name, email, password_hash, role, is_active, lgpd_consent, lgpd_consent_timestamp)
+      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `);
+
+    // Passwords hashed with bcrypt (cost 10)
+    const salt = bcrypt.genSaltSync(10);
+    const gerenteHash = bcrypt.hashSync('Gerente@123', salt);
+    const caixaHash = bcrypt.hashSync('Caixa@123', salt);
+
+    insertUser.run('Gerência Pôr do Açaí', 'gerente@pordoacai.com.br', gerenteHash, 'gerente', 1, 1);
+    insertUser.run('Operador de Caixa', 'caixa@pordoacai.com.br', caixaHash, 'operador', 1, 1);
   }
 }
 

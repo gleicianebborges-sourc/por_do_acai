@@ -7,6 +7,8 @@
   <meta name="description" content="Sistema de Ponto de Venda (PDV) para Açaiteria com Teclado Numérico Touch, Lançamento Rápido e Emissão de Cupom Fiscal NFC-e.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍧</text></svg>">
+  <!-- Auth & Session Guard (LGPD compliant access control) -->
+  <script src="js/auth.js"></script>
 </head>
 <body>
 
@@ -26,12 +28,23 @@
         <span>Sistema Conectado</span>
       </div>
 
-      <button id="btn-open-agent-logs" class="header-btn" title="Registros de Auditoria">
+      <!-- Current User Profile Badge -->
+      <div class="user-badge" id="user-badge" style="display: inline-flex; align-items: center; gap: 0.45rem; background: rgba(255,255,255,0.06); padding: 0.35rem 0.75rem; border-radius: var(--radius-full); font-size: 0.8rem; border: 1px solid var(--border-subtle);" title="Operador Autenticado">
+        <span>👤</span>
+        <span id="header-user-name" style="font-weight: 700; color: #fbcfe8;">Operador</span>
+        <span id="header-user-role" style="font-size: 0.7rem; background: rgba(236,72,153,0.25); color: #f472b6; padding: 0.15rem 0.45rem; border-radius: 4px; font-weight: 700; text-transform: uppercase;">caixa</span>
+      </div>
+
+      <button id="btn-open-agent-logs" class="header-btn" title="Registros de Auditoria (Art. 37 LGPD)">
         <span>📋</span> Auditoria
       </button>
 
       <button id="btn-open-history" class="header-btn" title="Histórico de Vendas Realizadas">
         <span>🕒</span> Histórico
+      </button>
+
+      <button id="btn-logout" class="header-btn" title="Encerrar Sessão do Operador" style="color: #fca5a5; border-color: rgba(244,63,94,0.3);">
+        <span>🚪</span> Sair
       </button>
     </div>
   </header>

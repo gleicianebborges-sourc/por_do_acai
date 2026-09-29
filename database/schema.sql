@@ -50,3 +50,45 @@ CREATE TABLE IF NOT EXISTS agent_logs (
 CREATE INDEX IF NOT EXISTS idx_sales_timestamp ON sales(timestamp);
 CREATE INDEX IF NOT EXISTS idx_agent_logs_sale_id ON agent_logs(sale_id);
 CREATE INDEX IF NOT EXISTS idx_sale_items_sale_id ON sale_items(sale_id);
+
+-- ========================================================
+-- AUTENTICAÇÃO, CONTROLE DE ACESSO & CONFORMIDADE LGPD
+-- ========================================================
+
+-- Tabela de Usuários (Operador / Gerente)
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL CHECK(role IN ('operador', 'gerente')) DEFAULT 'operador',
+  is_active INTEGER NOT NULL DEFAULT 1,
+  lgpd_consent INTEGER NOT NULL DEFAULT 1,
+  lgpd_consent_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tokens de Redefinição de Senha (TTL de 15 minutos e uso único)
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  token TEXT UNIQUE NOT NULL,
+  expires_at DATETIME NOT NULL,
+  is_used INTEGER NOT NULL DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+-- Trilha de Auditoria de Acesso (Art. 37 da LGPD - Registro das Operações de Tratamento)
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_email TEXT NOT NULL,
+  action TEXT NOT NULL,
+  ip_address TEXT,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_token ON password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_email ON audit_logs(user_email);

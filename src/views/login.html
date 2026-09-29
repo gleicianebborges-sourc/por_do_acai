@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pôr do Açaí | Autenticação & Acesso Seguro</title>
+  <meta name="description" content="Autenticação segura do Ponto de Venda (PDV) Pôr do Açaí em conformidade com os padrões da LGPD.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍧</text></svg>">
+  <style>
+    /* Specific styles for Login Page */
+    body.login-page-body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at 50% 20%, #2b0f4c 0%, #110524 60%, #080212 100%);
+      padding: 1.5rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 460px;
+      z-index: 10;
+    }
+
+    .login-brand-header {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+
+    .login-brand-logo {
+      font-size: 3.2rem;
+      filter: drop-shadow(0 4px 15px rgba(236, 72, 153, 0.4));
+      display: inline-block;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .login-brand-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #ffffff, #fbcfe8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-top: 0.35rem;
+    }
+
+    .login-brand-subtitle {
+      font-size: 0.85rem;
+      color: var(--accent-sunset-light);
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .login-card {
+      background: rgba(30, 15, 55, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-lg);
+      padding: 2rem 2.25rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 30px rgba(107, 33, 168, 0.2);
+    }
+
+    .login-card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #c7d2fe;
+      margin-bottom: 0.45rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 1rem;
+      color: #94a3b8;
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .login-input {
+      width: 100%;
+      background: #0d0517;
+      border: 1px solid rgba(129, 140, 248, 0.3);
+      color: white;
+      padding: 0.85rem 1rem 0.85rem 2.75rem;
+      border-radius: var(--radius-md);
+      font-size: 0.95rem;
+      font-family: var(--font-main);
+      transition: all 0.2s ease;
+    }
+
+    .login-input:focus {
+      outline: none;
+      border-color: #818cf8;
+      box-shadow: 0 0 12px rgba(129, 140, 248, 0.35);
+    }
+
+    .btn-toggle-pwd {
+      position: absolute;
+      right: 0.85rem;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 0.25rem;
+      font-size: 1rem;
+      transition: color 0.2s;
+    }
+
+    .btn-toggle-pwd:hover {
+      color: white;
+    }
+
+    /* LGPD Privacy Notice Box */
+    .lgpd-notice-card {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1rem;
+      margin: 1.25rem 0;
+      font-size: 0.76rem;
+      line-height: 1.45;
+      color: #a7f3d0;
+    }
+
+    .lgpd-notice-header {
+      font-weight: 700;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.3rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-login-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #7c3aed, #ec4899);
+      color: white;
+      border: none;
+      padding: 0.95rem;
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-login-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+    }
+
+    .btn-login-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .login-actions-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.25rem;
+      font-size: 0.82rem;
+    }
+
+    .login-link {
+      color: #a5b4fc;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .login-link:hover {
+      color: white;
+      text-decoration: underline;
+    }
+
+    .quick-creds-box {
+      margin-top: 1.5rem;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .quick-creds-title {
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .quick-creds-btns {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+
+    .quick-cred-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 0.35rem 0.65rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-cred-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: white;
+      border-color: #818cf8;
+    }
+
+    .alert-msg {
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-md);
+      font-size: 0.83rem;
+      margin-bottom: 1.25rem;
+      display: none;
+    }
+
+    .alert-error {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: #fca5a5;
+    }
+
+    .alert-success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+  </style>
+</head>
+<body class="login-page-body">
+
+  <div class="login-container">
+
+    <div class="login-brand-header">
+      <div class="login-brand-logo">🍧</div>
+      <h1 class="login-brand-title">PÔR DO AÇAÍ</h1>
+      <div class="login-brand-subtitle">Acesso Seguro & Frente de Caixa</div>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="login-alert" class="alert-msg"></div>
+
+    <!-- MAIN LOGIN CARD -->
+    <div class="login-card" id="card-login">
+      <div class="login-card-title">
+        <span>🔐</span> Identificação do Operador
+      </div>
+
+      <form id="form-login" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="login-email">E-mail Corporativo</label>
+          <div class="input-wrapper">
+            <span class="input-icon">✉️</span>
+            <input type="email" id="login-email" class="login-input" placeholder="seu.email@pordoacai.com.br" required autocomplete="username">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-password">Senha de Acesso</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔑</span>
+            <input type="password" id="login-password" class="login-input" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" class="btn-toggle-pwd" id="btn-toggle-pwd" aria-label="Mostrar/Ocultar Senha">👁️</button>
+          </div>
+        </div>
+
+        <!-- LGPD DATA PRIVACY & COMPLIANCE NOTICE -->
+        <div class="lgpd-notice-card" role="region" aria-label="Aviso de Privacidade LGPD">
+          <div class="lgpd-notice-header">
+            <span>🛡️</span> Privacidade & Segurança (LGPD - Lei 13.709/2018)
+          </div>
+          <div>
+            Tratamos apenas os dados essenciais (nome, e-mail e endereço IP de acesso) sob a base legal de cumprimento de dever legal e legítimo interesse (Art. 7º, II e IX da LGPD), estritamente para prevenção a fraudes e garantia da segurança das transações do caixa (Art. 37).
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login-submit" id="btn-submit-login">
+          <span>🚀 Entrar no Caixa</span>
+        </button>
+
+        <div class="login-actions-row">
+          <label style="display: flex; align-items: center; gap: 0.4rem; color: #94a3b8; cursor: pointer;">
+            <input type="checkbox" id="chk-remember" checked style="accent-color: #7c3aed;">
+            <span>Lembrar neste terminal</span>
+          </label>
+          <a class="login-link" id="link-forgot-pwd">Esqueci minha senha</a>
+        </div>
+      </form>
+
+      <!-- QUICK ACCESS DEMO CREDENTIALS -->
+      <div class="quick-creds-box">
+        <div class="quick-creds-title">
+          <span>⚡</span> Acesso Rápido para Demonstração:
+        </div>
+        <div class="quick-creds-btns">
+          <button type="button" class="quick-cred-btn" id="btn-cred-caixa">
+            👤 Caixa (Operador)
+          </button>
+          <button type="button" class="quick-cred-btn" id="btn-cred-gerente">
+            👑 Gerente
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- RESET PASSWORD CARD (TRIGGERED VIA URL TOKEN) -->
+    <div class="login-card" id="card-reset" style="display: none;">
+      <div class="login-card-title">
+        <span>🔄</span> Redefinir Senha de Acesso
+      </div>
+      <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+        Crie uma nova senha segura para sua conta.
+      </p>
+
+      <form id="form-reset-password">
+        <input type="hidden" id="reset-token-input">
+
+        <div class="form-group">
+          <label class="form-label" for="reset-new-password">Nova Senha (mínimo 6 caracteres)</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="reset-new-password" class="login-input" placeholder="Nova senha" required minlength="6">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reset-confirm-password">Confirmação da Nova Senha</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="reset-confirm-password" class="login-input" placeholder="Confirme a nova senha" required minlength="6">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login-submit" id="btn-submit-reset">
+          <span>✓ Atualizar Senha</span>
+        </button>
+
+        <div style="text-align: center; margin-top: 1rem;">
+          <a class="login-link" id="link-back-to-login">Voltar para o Login</a>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+
+  <!-- ================= FORGOT PASSWORD MODAL ================= -->
+  <div class="modal-overlay" id="forgot-modal" role="dialog" aria-modal="true" aria-labelledby="modal-forgot-title">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 id="modal-forgot-title">🔑 Recuperação de Acesso</h3>
+        <button class="btn-close-modal" id="btn-close-forgot" aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem;">
+        <div id="forgot-alert" class="alert-msg"></div>
+
+        <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 1.25rem;">
+          Digite seu e-mail cadastrado. Um link temporário e seguro de uso único (com validade de <strong>15 minutos</strong>) será gerado para que você possa redefinir sua senha.
+        </p>
+
+        <form id="form-forgot-password">
+          <div class="form-group">
+            <label class="form-label" for="forgot-email">E-mail Cadastrado</label>
+            <div class="input-wrapper">
+              <span class="input-icon">✉️</span>
+              <input type="email" id="forgot-email" class="login-input" placeholder="seu.email@pordoacai.com.br" required>
+            </div>
+          </div>
+
+          <div style="font-size: 0.74rem; color: #94a3b8; background: rgba(255,255,255,0.04); padding: 0.75rem; border-radius: 6px; margin-bottom: 1.25rem;">
+            🛡️ <em>Em conformidade com a LGPD e boas práticas de cibersegurança (OWASP), a resposta é padronizada para prevenir a enumeração indevida de contas.</em>
+          </div>
+
+          <!-- Simulation details box shown when dispatched -->
+          <div id="simulated-dispatch-box" style="display: none; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 0.85rem; margin-bottom: 1rem; font-size: 0.8rem; color: #bae6fd;">
+            <div style="font-weight: bold; margin-bottom: 4px;">📧 E-mail Seguro Simulado:</div>
+            <div style="font-size: 0.75rem; margin-bottom: 8px;">Link de redefinição emitido com token de uso único (TTL 15 min):</div>
+            <a id="simulated-reset-link" href="#" style="color: #38bdf8; font-family: monospace; font-size: 0.78rem; word-break: break-all; text-decoration: underline;">
+              Clique aqui para redefinir agora
+            </a>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+            <button type="button" class="btn-secondary" id="btn-cancel-forgot">Cancelar</button>
+            <button type="submit" class="btn-finalize-sale" id="btn-submit-forgot" style="padding: 0.7rem 1.25rem;">
+              <span>Enviar Instruções</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const formLogin = document.getElementById('form-login');
+      const emailInput = document.getElementById('login-email');
+      const passwordInput = document.getElementById('login-password');
+      const btnTogglePwd = document.getElementById('btn-toggle-pwd');
+      const loginAlert = document.getElementById('login-alert');
+      const btnSubmitLogin = document.getElementById('btn-submit-login');
+
+      // Demo cred buttons
+      const btnCredCaixa = document.getElementById('btn-cred-caixa');
+      const btnCredGerente = document.getElementById('btn-cred-gerente');
+
+      // Modal Forgot
+      const linkForgotPwd = document.getElementById('link-forgot-pwd');
+      const forgotModal = document.getElementById('forgot-modal');
+      const btnCloseForgot = document.getElementById('btn-close-forgot');
+      const btnCancelForgot = document.getElementById('btn-cancel-forgot');
+      const formForgotPassword = document.getElementById('form-forgot-password');
+      const forgotEmailInput = document.getElementById('forgot-email');
+      const forgotAlert = document.getElementById('forgot-alert');
+      const btnSubmitForgot = document.getElementById('btn-submit-forgot');
+      const simulatedDispatchBox = document.getElementById('simulated-dispatch-box');
+      const simulatedResetLink = document.getElementById('simulated-reset-link');
+
+      // Reset Card
+      const cardLogin = document.getElementById('card-login');
+      const cardReset = document.getElementById('card-reset');
+      const formResetPassword = document.getElementById('form-reset-password');
+      const resetTokenInput = document.getElementById('reset-token-input');
+      const resetNewPassword = document.getElementById('reset-new-password');
+      const resetConfirmPassword = document.getElementById('reset-confirm-password');
+      const linkBackToLogin = document.getElementById('link-back-to-login');
+      const btnSubmitReset = document.getElementById('btn-submit-reset');
+
+      // Toggle password visibility
+      if (btnTogglePwd) {
+        btnTogglePwd.addEventListener('click', () => {
+          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordInput.setAttribute('type', type);
+          btnTogglePwd.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+      }
+
+      function showAlert(el, msg, isError = true) {
+        el.textContent = msg;
+        el.className = 'alert-msg ' + (isError ? 'alert-error' : 'alert-success');
+        el.style.display = 'block';
+      }
+
+      function hideAlert(el) {
+        el.style.display = 'none';
+        el.textContent = '';
+      }
+
+      // Quick Cred Fill
+      if (btnCredCaixa) {
+        btnCredCaixa.addEventListener('click', () => {
+          emailInput.value = 'caixa@pordoacai.com.br';
+          passwordInput.value = 'Caixa@123';
+          hideAlert(loginAlert);
+        });
+      }
+
+      if (btnCredGerente) {
+        btnCredGerente.addEventListener('click', () => {
+          emailInput.value = 'gerente@pordoacai.com.br';
+          passwordInput.value = 'Gerente@123';
+          hideAlert(loginAlert);
+        });
+      }
+
+      // Check if URL has ?token=... to show Reset Password view
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get('token');
+      if (urlToken) {
+        cardLogin.style.display = 'none';
+        cardReset.style.display = 'block';
+        resetTokenInput.value = urlToken;
+      }
+
+      if (linkBackToLogin) {
+        linkBackToLogin.addEventListener('click', () => {
+          window.location.href = 'login.html';
+        });
+      }
+
+      // Handle Login Submit
+      if (formLogin) {
+        formLogin.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          hideAlert(loginAlert);
+
+          const email = emailInput.value.trim();
+          const password = passwordInput.value;
+
+          if (!email || !password) {
+            showAlert(loginAlert, 'Por favor, preencha o e-mail e a senha.');
+            return;
+          }
+
+          try {
+            btnSubmitLogin.disabled = true;
+            btnSubmitLogin.innerHTML = '<span>⏳ Autenticando...</span>';
+
+            const res = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+              showAlert(loginAlert, data.error || 'Erro na autenticação.');
+              return;
+            }
+
+            // Save user session in localStorage
+            localStorage.setItem('pos_token', data.token);
+            localStorage.setItem('pos_user', JSON.stringify(data.user));
+
+            showAlert(loginAlert, 'Acesso autorizado! Redirecionando para o caixa...', false);
+
+            setTimeout(() => {
+              window.location.href = 'index.html';
+            }, 600);
+
+          } catch (err) {
+            showAlert(loginAlert, 'Falha de comunicação com o servidor: ' + err.message);
+          } finally {
+            btnSubmitLogin.disabled = false;
+            btnSubmitLogin.innerHTML = '<span>🚀 Entrar no Caixa</span>';
+          }
+        });
+      }
+
+      // Forgot Password Modal Handlers
+      if (linkForgotPwd) {
+        linkForgotPwd.addEventListener('click', () => {
+          hideAlert(forgotAlert);
+          simulatedDispatchBox.style.display = 'none';
+          if (emailInput.value.trim()) {
+            forgotEmailInput.value = emailInput.value.trim();
+          }
+          forgotModal.classList.add('active');
+        });
+      }
+
+      function closeForgot() {
+        forgotModal.classList.remove('active');
+        hideAlert(forgotAlert);
+      }
+
+      if (btnCloseForgot) btnCloseForgot.addEventListener('click', closeForgot);
+      if (btnCancelForgot) btnCancelForgot.addEventListener('click', closeForgot);
+
+      if (formForgotPassword) {
+        formForgotPassword.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          hideAlert(forgotAlert);
+
+          const email = forgotEmailInput.value.trim();
+          if (!email) {
+            showAlert(forgotAlert, 'Informe seu e-mail cadastrado.');
+            return;
+          }
+
+          try {
+            btnSubmitForgot.disabled = true;
+            btnSubmitForgot.innerHTML = '<span>⏳ Enviando...</span>';
+
+            const res = await fetch('/api/auth/forgot-password', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email })
+            });
+
+            const data = await res.json();
+
+            showAlert(forgotAlert, data.message, false);
+
+            if (data.debugResetUrl) {
+              simulatedResetLink.href = data.debugResetUrl;
+              simulatedResetLink.textContent = data.debugResetUrl;
+              simulatedDispatchBox.style.display = 'block';
+            }
+
+          } catch (err) {
+            showAlert(forgotAlert, 'Erro ao solicitar redefinição: ' + err.message);
+          } finally {
+            btnSubmitForgot.disabled = false;
+            btnSubmitForgot.innerHTML = '<span>Enviar Instruções</span>';
+          }
+        });
+      }
+
+      // Handle Reset Password Submit
+      if (formResetPassword) {
+        formResetPassword.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          hideAlert(loginAlert);
+
+          const token = resetTokenInput.value.trim();
+          const newPassword = resetNewPassword.value;
+          const confirmPassword = resetConfirmPassword.value;
+
+          if (newPassword.length < 6) {
+            showAlert(loginAlert, 'A senha deve possuir no mínimo 6 caracteres.');
+            return;
+          }
+
+          if (newPassword !== confirmPassword) {
+            showAlert(loginAlert, 'As senhas digitadas não coincidem.');
+            return;
+          }
+
+          try {
+            btnSubmitReset.disabled = true;
+            btnSubmitReset.innerHTML = '<span>⏳ Atualizando...</span>';
+
+            const res = await fetch('/api/auth/reset-password', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token, newPassword })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+              showAlert(loginAlert, data.error || 'Erro ao redefinir senha.');
+              return;
+            }
+
+            showAlert(loginAlert, data.message, false);
+
+            setTimeout(() => {
+              window.location.href = 'login.html';
+            }, 1800);
+
+          } catch (err) {
+            showAlert(loginAlert, 'Erro de conexão: ' + err.message);
+          } finally {
+            btnSubmitReset.disabled = false;
+            btnSubmitReset.innerHTML = '<span>✓ Atualizar Senha</span>';
+          }
+        });
+      }
+
+    })();
+  </script>
+</body>
+</html>

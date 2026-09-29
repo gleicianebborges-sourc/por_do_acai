@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pôr do Açaí | PDV Agentic & Frente de Caixa</title>
+  <meta name="description" content="Sistema de Ponto de Venda (PDV) para Açaiteria com Teclado Numérico Touch, Copilot Natural Language e Camada de Execução Agentic (NFC-e e WhatsApp).">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍧</text></svg>">
+</head>
+<body>
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="top-header">
+    <div class="brand-container">
+      <span class="brand-icon">🍧</span>
+      <div class="brand-titles">
+        <h1 id="brand-title">PÔR DO AÇAÍ</h1>
+        <div class="brand-tagline">PDV Touch & Agentic Skill Layer</div>
+      </div>
+    </div>
+
+    <div class="header-status-group">
+      <div class="agent-orchestrator-badge" title="Orquestrador de Habilidades Agentic Conectado">
+        <div class="pulse-dot"></div>
+        <span>Skill Orchestrator Ativo</span>
+      </div>
+
+      <button id="btn-open-agent-logs" class="header-btn" title="Ver logs de execução das skills">
+        <span>🤖</span> Logs Agentic
+      </button>
+
+      <button id="btn-open-history" class="header-btn" title="Histórico de Vendas Realizadas">
+        <span>📋</span> Histórico
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= LIVE SKILL STATUS TICKER ================= -->
+  <div class="live-skill-ticker" id="live-skill-ticker-bar">
+    <span class="ticker-label">⚡ Live Skill Stream:</span>
+    <span class="ticker-content" id="live-skill-ticker-text">Pronto para operação. Aguardando comando no caixa...</span>
+  </div>
+
+  <!-- ================= MAIN POS WORKSPACE ================= -->
+  <main class="pos-workspace">
+
+    <!-- ========== LEFT SECTION: COPILOT, NUMPAD & FIXED PRODUCTS ========== -->
+    <section class="pos-left-section" aria-label="Entrada Rápida e Catálogo">
+
+      <!-- COPILOT NATURAL LANGUAGE COMMAND BAR -->
+      <article class="copilot-card">
+        <div class="copilot-header">
+          <div class="copilot-title">
+            <span>✨</span> Copilot Skill (Linguagem Natural / Atalhos de Caixa)
+          </div>
+          <span class="copilot-badge">AI Assistant</span>
+        </div>
+
+        <div class="copilot-input-row">
+          <input type="text" id="copilot-cmd-input" class="copilot-input" placeholder='Digite ou fale ex: "açaí 18.50 + coke", "2 aguas + acai 22"' autocomplete="off">
+          <button id="btn-run-copilot" class="btn-copilot-run">
+            <span>⚡ Executar</span>
+          </button>
+        </div>
+
+        <div class="copilot-chips-row">
+          <span class="copilot-chip-label">Exemplos rápidos:</span>
+          <button class="copilot-chip" data-cmd="açaí 18.50 + coke">açaí 18.50 + coke</button>
+          <button class="copilot-chip" data-cmd="2 aguas + acai 22">2 aguas + acai 22</button>
+          <button class="copilot-chip" data-cmd="trufado 24.90 + red bull + nutella">trufado 24.90 + red bull + nutella</button>
+        </div>
+      </article>
+
+      <!-- NUMPAD & VARIABLE AÇAÍ PRICE INPUT -->
+      <article class="numpad-container-card">
+        <div class="numpad-layout">
+
+          <!-- VARIABLE PRODUCT BASE SELECTOR -->
+          <div class="variable-prods-column">
+            <div class="section-label">
+              <span>🍧 1. Escolha a Base do Açaí</span>
+              <span style="font-size: 0.72rem; color: var(--text-dim);">Preço Variável / Balança Manual</span>
+            </div>
+
+            <div class="var-prods-grid" id="var-prods-grid">
+              <!-- Dynamically populated by app.js -->
+            </div>
+          </div>
+
+          <!-- NUMPAD DISPLAY & KEYS -->
+          <div class="numpad-keypad-column">
+            <div class="section-label">
+              <span>🔢 2. Digite o Valor (R$)</span>
+            </div>
+
+            <!-- DIGITAL NUMPAD DISPLAY -->
+            <div class="numpad-display-box">
+              <span class="display-currency-tag">R$</span>
+              <span class="display-digits" id="numpad-display-val">0,00</span>
+            </div>
+
+            <!-- QUICK PRICE PRESET CHIPS -->
+            <div class="quick-prices-row">
+              <button class="quick-price-chip" data-price="12.00">R$ 12</button>
+              <button class="quick-price-chip" data-price="15.00">R$ 15</button>
+              <button class="quick-price-chip" data-price="18.00">R$ 18</button>
+              <button class="quick-price-chip" data-price="22.00">R$ 22</button>
+              <button class="quick-price-chip" data-price="25.00">R$ 25</button>
+              <button class="quick-price-chip" data-price="30.00">R$ 30</button>
+            </div>
+
+            <!-- 12-BUTTON TOUCH NUMPAD -->
+            <div class="numpad-grid">
+              <button class="numpad-key" data-key="1">1</button>
+              <button class="numpad-key" data-key="2">2</button>
+              <button class="numpad-key" data-key="3">3</button>
+
+              <button class="numpad-key" data-key="4">4</button>
+              <button class="numpad-key" data-key="5">5</button>
+              <button class="numpad-key" data-key="6">6</button>
+
+              <button class="numpad-key" data-key="7">7</button>
+              <button class="numpad-key" data-key="8">8</button>
+              <button class="numpad-key" data-key="9">9</button>
+
+              <button class="numpad-key action-clear" data-action="clear" title="Limpar">C</button>
+              <button class="numpad-key" data-key="0">0</button>
+              <button class="numpad-key" data-key=".">,</button>
+            </div>
+
+            <button id="btn-add-manual-item" class="btn-add-manual-item">
+              <span>➕</span> Adicionar Açaí ao Carrinho
+            </button>
+          </div>
+
+        </div>
+      </article>
+
+      <!-- FIXED-PRICE QUICK-ADD ITEMS -->
+      <article class="fixed-products-card">
+        <div class="section-label" style="margin-bottom: 0.75rem;">
+          <span>🥤 3. Bebidas & Adicionais (Preço Fixo - Toque Rápido)</span>
+        </div>
+        <div class="fixed-grid" id="fixed-products-grid">
+          <!-- Dynamically populated by app.js -->
+        </div>
+      </article>
+
+    </section>
+
+
+    <!-- ========== RIGHT SECTION: SHOPPING CART & CHECKOUT ========== -->
+    <aside class="pos-right-section" aria-label="Carrinho e Checkout">
+      <div class="cart-card">
+        <div class="cart-header">
+          <h2>
+            <span>🛒</span> Carrinho de Venda
+            <span class="cart-items-count" id="cart-items-badge">0</span>
+          </h2>
+          <button id="btn-clear-cart" class="cart-clear-btn" title="Limpar itens">
+            🗑️ Limpar
+          </button>
+        </div>
+
+        <div class="cart-items-list" id="cart-items-container">
+          <div class="cart-empty-state" id="cart-empty-view">
+            <span class="empty-icon">🥣</span>
+            <div>
+              <strong>Carrinho Vazio</strong>
+              <div style="font-size: 0.8rem; margin-top: 4px;">Digite o valor no numpad ou use o Copilot para adicionar itens.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cart-footer">
+          <div class="total-summary-lines">
+            <div class="summary-row">
+              <span>Subtotal:</span>
+              <span id="cart-subtotal-val" style="font-family: var(--font-mono);">R$ 0,00</span>
+            </div>
+            <div class="summary-row">
+              <span>Trib. aprox. (IBPT 22,85%):</span>
+              <span id="cart-tax-estimate" style="font-family: var(--font-mono); font-size: 0.8rem;">R$ 0,00</span>
+            </div>
+            <div class="summary-row grand-total">
+              <span>TOTAL A PAGAR:</span>
+              <span class="total-amount" id="cart-grand-total">R$ 0,00</span>
+            </div>
+          </div>
+
+          <button id="btn-start-checkout" class="btn-checkout-primary" disabled>
+            <span>💳 FINALIZAR VENDA (F2)</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+
+  <!-- ================= CHECKOUT MODAL ================= -->
+  <div class="modal-overlay" id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="modal-checkout-title">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-checkout-title">💰 Finalizar Venda & Disparar Skills</h3>
+        <button class="btn-close-modal" id="btn-close-checkout" aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; background: rgba(0,0,0,0.3); padding: 0.85rem 1rem; border-radius: var(--radius-md);">
+          <span style="font-size: 0.9rem; color: var(--text-muted);">Total da Compra:</span>
+          <span class="checkout-total-display" style="font-family: var(--font-mono); font-size: 1.6rem; font-weight: 800; color: #38bdf8;">R$ 0,00</span>
+        </div>
+
+        <!-- OPTIONAL CUSTOMER PHONE (FOR DIGITAL RECEIPT SKILL WHATSAPP) -->
+        <div class="customer-phone-group">
+          <label for="checkout-customer-phone">
+            <span>📱</span> WhatsApp do Cliente (Opcional para envio de Comprovante Digital):
+          </label>
+          <input type="tel" id="checkout-customer-phone" class="customer-phone-input" placeholder="(91) 98765-4321">
+        </div>
+
+        <!-- PAYMENT METHOD TABS -->
+        <div class="payment-tabs">
+          <button class="tab-btn active" data-method="PIX" id="tab-pix">
+            <span class="tab-icon">⚡</span>
+            <span>PIX</span>
+          </button>
+          <button class="tab-btn" data-method="CREDIT_CARD" id="tab-credit">
+            <span class="tab-icon">💳</span>
+            <span>Crédito</span>
+          </button>
+          <button class="tab-btn" data-method="DEBIT_CARD" id="tab-debit">
+            <span class="tab-icon">🏦</span>
+            <span>Débito</span>
+          </button>
+          <button class="tab-btn" data-method="CASH" id="tab-cash">
+            <span class="tab-icon">💵</span>
+            <span>Dinheiro</span>
+          </button>
+        </div>
+
+        <!-- PIX PANEL -->
+        <div class="payment-panel" id="panel-pix">
+          <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.65rem;">
+            <div style="font-size: 0.85rem; font-weight: 600; color: #34d399;">Aponte o celular para pagar via PIX</div>
+            <div style="background: white; padding: 0.6rem; border-radius: 8px;">
+              <svg width="130" height="130" viewBox="0 0 100 100">
+                <rect width="100" height="100" fill="#ffffff" />
+                <rect x="5" y="5" width="28" height="28" fill="#1e293b" />
+                <rect x="9" y="9" width="20" height="20" fill="#ffffff" />
+                <rect x="13" y="13" width="12" height="12" fill="#1e293b" />
+
+                <rect x="67" y="5" width="28" height="28" fill="#1e293b" />
+                <rect x="71" y="9" width="20" height="20" fill="#ffffff" />
+                <rect x="75" y="13" width="12" height="12" fill="#1e293b" />
+
+                <rect x="5" y="67" width="28" height="28" fill="#1e293b" />
+                <rect x="9" y="71" width="20" height="20" fill="#ffffff" />
+                <rect x="13" y="75" width="12" height="12" fill="#1e293b" />
+
+                <rect x="38" y="8" width="8" height="8" fill="#1e293b" />
+                <rect x="52" y="16" width="8" height="8" fill="#1e293b" />
+                <rect x="38" y="38" width="24" height="24" fill="#1e293b" />
+                <rect x="68" y="44" width="8" height="8" fill="#1e293b" />
+                <rect x="80" y="56" width="12" height="8" fill="#1e293b" />
+                <rect x="38" y="72" width="16" height="8" fill="#1e293b" />
+                <rect x="64" y="72" width="24" height="16" fill="#1e293b" />
+              </svg>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 0.7rem; color: #888; word-break: break-all; background: rgba(255,255,255,0.05); padding: 0.4rem 0.6rem; border-radius: 6px; width: 100%;">
+              00020126580014br.gov.bcb.pix013648912834000190520400005303986540549.905802BR5916POR DO ACAI LTDA6009BELEM-PA62070503***6304E8A2
+            </div>
+          </div>
+        </div>
+
+        <!-- CREDIT CARD PANEL -->
+        <div class="payment-panel" id="panel-credit" style="display: none;">
+          <div style="text-align: center; padding: 1.25rem 0;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.4rem;">💳</div>
+            <div style="font-size: 1.05rem; font-weight: bold;">Aproxime ou insira o Cartão de Crédito</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem;">Terminal TEF Conectado</div>
+          </div>
+        </div>
+
+        <!-- DEBIT CARD PANEL -->
+        <div class="payment-panel" id="panel-debit" style="display: none;">
+          <div style="text-align: center; padding: 1.25rem 0;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.4rem;">🏦</div>
+            <div style="font-size: 1.05rem; font-weight: bold;">Aproxime ou insira o Cartão de Débito</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem;">Aguardando senha no PIN Pad...</div>
+          </div>
+        </div>
+
+        <!-- CASH PANEL WITH CHANGE CALCULATOR -->
+        <div class="payment-panel" id="panel-cash" style="display: none;">
+          <div class="cash-input-group">
+            <label for="cash-received-input">Valor Entregue pelo Cliente em Dinheiro (R$):</label>
+            <input type="number" id="cash-received-input" class="cash-input" step="0.50" min="0" placeholder="0,00">
+          </div>
+
+          <div class="cash-presets-row">
+            <span style="font-size: 0.78rem; color: var(--text-muted); width: 100%;">Cédulas Rápidas:</span>
+            <button class="cash-chip" data-val="10">R$ 10</button>
+            <button class="cash-chip" data-val="20">R$ 20</button>
+            <button class="cash-chip" data-val="50">R$ 50</button>
+            <button class="cash-chip" data-val="100">R$ 100</button>
+            <button class="cash-chip" data-val="200">R$ 200</button>
+          </div>
+
+          <div class="change-display-box">
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: bold; color: var(--text-muted);">TROCO A DEVOLVER</div>
+              <div style="font-size: 0.75rem; color: var(--text-dim);">Diferença calculada</div>
+            </div>
+            <div class="change-amount" id="cash-change-display">R$ 0,00</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-checkout">Cancelar</button>
+        <button class="btn-finalize-sale" id="btn-confirm-checkout">
+          <span>✓ Confirmar & Emitir NFC-e</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================= RECEIPT VIEW MODAL (PRINTABLE NFC-e) ================= -->
+  <div class="modal-overlay" id="receipt-modal" role="dialog" aria-modal="true" aria-labelledby="modal-receipt-title">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 id="modal-receipt-title">🧾 Cupom Fiscal Eletrônico (NFC-e)</h3>
+        <button class="btn-close-modal" id="btn-close-receipt" aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="modal-body" style="background: #2b183d; padding: 1.5rem 1rem;">
+        <div id="receipt-content-area">
+          <!-- Injected dynamically via receipt.js -->
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+          <button style="flex: 1; background: #111827; color: white; border: none; padding: 0.75rem; border-radius: 6px; font-weight: bold; cursor: pointer;" id="btn-print-action">
+            🖨️ IMPRIMIR COMPROVANTE (Ctrl+P)
+          </button>
+          <button class="btn-finalize-sale" id="btn-new-sale-action" style="flex: 1;">
+            ✨ Nova Venda
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================= AGENT LOGS MODAL ================= -->
+  <div class="modal-overlay" id="agent-logs-modal" role="dialog" aria-modal="true">
+    <div class="modal-box" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3>🤖 Telemetria e Logs da Camada Agentic</h3>
+        <button class="btn-close-modal" id="btn-close-agent-logs">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="agent-logs-list" style="max-height: 450px; overflow-y: auto;">
+          <!-- Injected dynamically via agentLogs.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================= SALES HISTORY MODAL ================= -->
+  <div class="modal-overlay" id="history-modal" role="dialog" aria-modal="true">
+    <div class="modal-box" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3>📋 Histórico de Vendas Realizadas</h3>
+        <button class="btn-close-modal" id="btn-close-history">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="sales-history-list" style="max-height: 450px; overflow-y: auto;">
+          <!-- Injected dynamically via app.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SCRIPTS -->
+  <script src="js/agentLogs.js"></script>
+  <script src="js/receipt.js"></script>
+  <script src="js/checkout.js"></script>
+  <script src="js/copilot.js"></script>
+  <script src="js/numpad.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

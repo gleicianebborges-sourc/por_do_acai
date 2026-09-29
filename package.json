@@ -1,0 +1,18 @@
+{
+  "name": "por-do-acai-pos",
+  "version": "1.0.0",
+  "description": "Ponto de Venda (PDV) - Pôr do Açaí com pesagem em tempo real e emissão NFC-e",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["acai", "pos", "pdv", "mvc", "weighing-scale", "nfc-e"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  }
+}

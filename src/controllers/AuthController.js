@@ -256,17 +256,50 @@ class AuthController {
   }
 
   /**
-   * GET /api/auth/audit-logs
-   * Art. 37 LGPD - Relatório de auditoria de operações
+   * Helper to retrieve authenticated user from request session token
    */
-  async getAuditLogs(req, res) {
-    try {
-      const logs = AuditLog.findRecent(50);
-      return res.json(logs);
-    } catch (err) {
-      return res.status(500).json({ error: 'Erro ao buscar trilha de auditoria.' });
+  getAuthenticatedUser(req) {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7).trim()
+      : (req.query?.token || req.body?.token);
+
+    if (!token) return null;
+
+    const session = activeSessions.get(token);
+    if (!session || Date.now() > session.expiresAt) {
+      if (session) activeSessions.delete(token);
+      return null;
     }
+
+    const user = User.findById(session.userId);
+    if (!user || !user.is_active) {
+      activeSessions.delete(token);
+      return null;
+    }
+
+    return user;
+  }
+
+  /**
+   * Express middleware requiring an active authenticated user session
+   */
+  requireAuth(req, res, next) {
+    const user = this.getAuthenticatedUser(req);
+    if (!user) {
+      return res.status(401).json({
+        error: 'Sessão expirada ou não autenticada. Por favor, realize o login novamente.',
+        requireLogin: true
+      });
+    }
+    req.user = user;
+    next();
   }
 }
 
-module.exports = new AuthController();
+const authControllerInstance = new AuthController();
+// Bind middleware method
+authControllerInstance.requireAuth = authControllerInstance.requireAuth.bind(authControllerInstance);
+authControllerInstance.getClientIp = getClientIp;
+
+module.exports = authControllerInstance;

@@ -25,4 +25,14 @@ router.get('/agent-logs', (req, res) => posController.getAgentLogs(req, res));
 router.post('/checkout', (req, res) => checkoutController.processCheckout(req, res));
 router.get('/sales', (req, res) => checkoutController.getSalesHistory(req, res));
 
+// Centralized Fiscal Configuration Route
+router.get('/config/fiscal', (req, res) => {
+  res.json(require('../config/fiscalConfig'));
+});
+
+// Daily Closing & Audit Dispatch Routes (Authenticated & LGPD compliant)
+const dailyClosingController = require('../controllers/DailyClosingController');
+router.get('/closing/preview', authController.requireAuth, (req, res) => dailyClosingController.getPreview(req, res));
+router.post('/closing/execute', authController.requireAuth, (req, res) => dailyClosingController.executeClosing(req, res));
+
 module.exports = router;

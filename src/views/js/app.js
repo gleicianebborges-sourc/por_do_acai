@@ -8,7 +8,10 @@ class POSApp {
   constructor() {
     this.cart = [];
     this.variableProducts = [];
+    this.beverages = [];
+    this.additions = [];
     this.fixedProducts = [];
+    this.fiscalConfig = window.posFiscalConfig || null;
 
     this.initDOMElements();
     this.bindEvents();
@@ -16,10 +19,12 @@ class POSApp {
   }
 
   initDOMElements() {
-    // Variable Products Grid
+    // Variable Products Grid (Açaí bases)
     this.varProdsGrid = document.getElementById('var-prods-grid');
 
-    // Fixed Quick-Add Products
+    // Quick Categories
+    this.beveragesGrid = document.getElementById('beverages-grid');
+    this.additionsGrid = document.getElementById('additions-grid');
     this.fixedProductsGrid = document.getElementById('fixed-products-grid');
 
     // Cart Elements
@@ -73,14 +78,28 @@ class POSApp {
 
   async loadCatalog() {
     try {
+      // Load centralized fiscal configuration
+      try {
+        const fiscalRes = await fetch('/api/config/fiscal');
+        if (fiscalRes.ok) {
+          this.fiscalConfig = await fiscalRes.json();
+          window.posFiscalConfig = this.fiscalConfig;
+        }
+      } catch (err) {
+        console.warn('Could not load fiscal configuration, using fallback defaults', err);
+      }
+
       const res = await fetch('/api/products');
       const data = await res.json();
 
       this.variableProducts = data.variablePriceProducts || [];
+      this.beverages = data.beverages || (data.fixedPriceProducts || []).filter(p => p.category === 'bebidas');
+      this.additions = data.additions || (data.fixedPriceProducts || []).filter(p => p.category === 'adicionais' || p.category === 'toppings');
       this.fixedProducts = data.fixedPriceProducts || [];
 
       this.renderVariableProducts();
-      this.renderFixedProducts();
+      this.renderBeverages();
+      this.renderAdditions();
 
       // Default select first variable product for Numpad
       if (this.variableProducts.length > 0) {
@@ -116,20 +135,25 @@ class POSApp {
     this.renderVariableProducts();
   }
 
-  renderFixedProducts() {
-    if (!this.fixedProductsGrid) return;
-    this.fixedProductsGrid.innerHTML = this.fixedProducts.map(prod => `
-      <div class="fixed-btn" data-id="${prod.id}">
-        <span class="fixed-emoji">${prod.image_emoji}</span>
-        <span class="fixed-title">${prod.name}</span>
-        <span class="fixed-price">R$ ${prod.default_price.toFixed(2).replace('.', ',')}</span>
+  renderBeverages() {
+    if (!this.beveragesGrid) return;
+    this.beveragesGrid.innerHTML = this.beverages.map(prod => `
+      <div class="quick-card" data-id="${prod.id}" title="Adicionar 1 un ao carrinho">
+        <div class="quick-card-top">
+          <span class="quick-card-emoji">${prod.image_emoji}</span>
+          <span class="quick-card-title">${prod.name}</span>
+        </div>
+        <div class="quick-card-bottom">
+          <span class="quick-card-price">R$ ${Number(prod.default_price).toFixed(2).replace('.', ',')}</span>
+          <span class="quick-card-action">➕ 1 un</span>
+        </div>
       </div>
     `).join('');
 
-    this.fixedProductsGrid.querySelectorAll('.fixed-btn').forEach(btn => {
+    this.beveragesGrid.querySelectorAll('.quick-card').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = Number(btn.getAttribute('data-id'));
-        const product = this.fixedProducts.find(p => p.id === id);
+        const product = this.beverages.find(p => p.id === id);
         if (product) {
           this.addItemToCart({
             product_id: product.id,
@@ -137,7 +161,40 @@ class POSApp {
             is_variable_price: false,
             image_emoji: product.image_emoji,
             quantity: 1,
-            final_price: product.default_price
+            final_price: Number(product.default_price)
+          });
+        }
+      });
+    });
+  }
+
+  renderAdditions() {
+    if (!this.additionsGrid) return;
+    this.additionsGrid.innerHTML = this.additions.map(prod => `
+      <div class="quick-card" data-id="${prod.id}" title="Adicionar 1 un ao carrinho">
+        <div class="quick-card-top">
+          <span class="quick-card-emoji">${prod.image_emoji}</span>
+          <span class="quick-card-title">${prod.name}</span>
+        </div>
+        <div class="quick-card-bottom">
+          <span class="quick-card-price">R$ ${Number(prod.default_price).toFixed(2).replace('.', ',')}</span>
+          <span class="quick-card-action">➕ 1 un</span>
+        </div>
+      </div>
+    `).join('');
+
+    this.additionsGrid.querySelectorAll('.quick-card').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.getAttribute('data-id'));
+        const product = this.additions.find(p => p.id === id);
+        if (product) {
+          this.addItemToCart({
+            product_id: product.id,
+            name: product.name,
+            is_variable_price: false,
+            image_emoji: product.image_emoji,
+            quantity: 1,
+            final_price: Number(product.default_price)
           });
         }
       });
@@ -145,12 +202,16 @@ class POSApp {
   }
 
   addItemToCart(item) {
+    const qty = Number(item.quantity) || 1;
+    const finalPrice = Math.round(Number(item.final_price || 0) * 100) / 100;
+    const unitPrice = item.is_variable_price ? finalPrice : (finalPrice / qty);
+
     // If fixed product already in cart, increment quantity
     if (!item.is_variable_price) {
       const existing = this.cart.find(i => i.product_id === item.product_id && !i.is_variable_price);
       if (existing) {
-        existing.quantity += item.quantity || 1;
-        existing.final_price = Math.round((existing.quantity * (item.final_price / (item.quantity || 1))) * 100) / 100;
+        existing.quantity += qty;
+        existing.final_price = Math.round(existing.quantity * unitPrice * 100) / 100;
         this.renderCart();
         return;
       }
@@ -161,8 +222,8 @@ class POSApp {
       name: item.name,
       is_variable_price: Boolean(item.is_variable_price),
       image_emoji: item.image_emoji || '🍧',
-      quantity: item.quantity || 1,
-      final_price: Number(item.final_price)
+      quantity: qty,
+      final_price: finalPrice
     });
 
     this.renderCart();
@@ -179,17 +240,19 @@ class POSApp {
   }
 
   calculateGrandTotal() {
-    return Math.round(this.cart.reduce((sum, item) => sum + item.final_price, 0) * 100) / 100;
+    return Math.round(this.cart.reduce((sum, item) => sum + Number(item.final_price || 0), 0) * 100) / 100;
   }
 
   renderCart() {
     const total = this.calculateGrandTotal();
-    const count = this.cart.reduce((sum, i) => sum + i.quantity, 0);
+    const count = this.cart.reduce((sum, i) => sum + (Number(i.quantity) || 1), 0);
+    const taxRate = Number(this.fiscalConfig?.ibptTaxRate || 22.85);
+    const taxVal = Math.round(total * (taxRate / 100) * 100) / 100;
 
     if (this.cartCountBadge) this.cartCountBadge.textContent = count;
     if (this.cartSubtotal) this.cartSubtotal.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
     if (this.cartGrandTotal) this.cartGrandTotal.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-    if (this.cartTaxEstimate) this.cartTaxEstimate.textContent = `R$ ${(total * 0.2285).toFixed(2).replace('.', ',')}`;
+    if (this.cartTaxEstimate) this.cartTaxEstimate.textContent = `R$ ${taxVal.toFixed(2).replace('.', ',')}`;
 
     if (this.btnCheckout) {
       this.btnCheckout.disabled = this.cart.length === 0;
@@ -204,9 +267,13 @@ class POSApp {
     if (this.cartEmptyState) this.cartEmptyState.style.display = 'none';
 
     this.cartItemsList.innerHTML = this.cart.map((item, index) => {
+      const itemQty = Number(item.quantity) || 1;
+      const itemFinalPrice = Number(item.final_price) || 0;
+      const unitPrice = itemFinalPrice / itemQty;
+
       const detailStr = item.is_variable_price
-        ? `Preço Manual / Balança`
-        : `${item.quantity} un × R$ ${(item.final_price / item.quantity).toFixed(2).replace('.', ',')}`;
+        ? `1 un × R$ ${itemFinalPrice.toFixed(2).replace('.', ',')} (Preço Manual / Balança)`
+        : `${itemQty} un × R$ ${unitPrice.toFixed(2).replace('.', ',')}`;
 
       return `
         <div class="cart-item-row">
@@ -218,7 +285,7 @@ class POSApp {
             </div>
           </div>
           <div class="item-price-actions">
-            <span class="item-total-price">R$ ${item.final_price.toFixed(2).replace('.', ',')}</span>
+            <span class="item-total-price">R$ ${itemFinalPrice.toFixed(2).replace('.', ',')}</span>
             <button class="btn-remove-item" onclick="window.app.removeCartItem(${index})" title="Remover item">✕</button>
           </div>
         </div>
@@ -238,7 +305,7 @@ class POSApp {
         this.historyList.innerHTML = sales.map(s => `
           <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
             <div>
-              <div style="font-weight: bold; font-size: 0.95rem;">Venda #${String(s.id).padStart(6, '0')} - R$ ${s.total_amount.toFixed(2).replace('.', ',')}</div>
+              <div style="font-weight: bold; font-size: 0.95rem;">Venda #${String(s.id).padStart(6, '0')} - R$ ${Number(s.total_amount).toFixed(2).replace('.', ',')}</div>
               <div style="font-size: 0.75rem; color: #888;">${new Date(s.timestamp).toLocaleString('pt-BR')} • ${s.payment_method} ${s.customer_phone ? `• Tel: ${s.customer_phone}` : ''}</div>
             </div>
             <button class="header-btn" onclick="window.app.reprintReceipt(${s.id})">
@@ -265,10 +332,16 @@ class POSApp {
       const sale = sales.find(s => s.id === saleId);
       if (!sale) throw new Error('Venda não encontrada');
 
+      const taxRate = Number(this.fiscalConfig?.ibptTaxRate || 22.85);
+      const approxTax = Math.round(Number(sale.total_amount) * (taxRate / 100) * 100) / 100;
+
       this.closeHistory();
       if (window.receiptView) {
         window.receiptView.show({
           sale,
+          companyInfo: this.fiscalConfig || window.posFiscalConfig,
+          approxTax,
+          ibptTaxRate: taxRate,
           taxResult: {
             formattedKey: '1526094891283400019065001' + String(sale.id).padStart(9, '0') + '100000000',
             protocolNumber: '11526' + Date.now().toString().slice(-10)

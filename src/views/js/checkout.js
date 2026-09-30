@@ -163,9 +163,12 @@ class CheckoutModal {
       if (window.receiptView) {
         window.receiptView.show({
           sale: data.sale,
+          companyInfo: data.companyInfo || window.posFiscalConfig,
           taxResult: data.taxResult,
-          formattedKey: data.taxResult.formattedKey,
-          protocolNumber: data.taxResult.protocolNumber,
+          approxTax: data.approxTax,
+          ibptTaxRate: data.ibptTaxRate,
+          formattedKey: data.taxResult?.formattedKey,
+          protocolNumber: data.taxResult?.protocolNumber,
           customerPhone
         });
       }

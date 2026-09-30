@@ -9,8 +9,10 @@ class SaleItem {
     this.id = id;
     this.sale_id = sale_id;
     this.product_id = product_id;
-    this.final_price = Number(final_price);
-    this.quantity = Number(quantity);
+    this.final_price = Number(final_price || 0);
+    this.calculated_price = this.final_price;
+    this.quantity = Number(quantity || 1);
+    this.quantity_or_weight = this.quantity;
     this.product_name = product_name;
     this.ncm_code = ncm_code;
     this.image_emoji = image_emoji;

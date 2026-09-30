@@ -14,10 +14,14 @@ class POSController {
     try {
       const all = Product.findAll();
       const variablePriceProducts = all.filter(p => p.is_variable_price);
+      const beverages = all.filter(p => !p.is_variable_price && p.category === 'bebidas');
+      const additions = all.filter(p => !p.is_variable_price && p.category === 'adicionais');
       const fixedPriceProducts = all.filter(p => !p.is_variable_price);
 
       res.json({
         variablePriceProducts,
+        beverages,
+        additions,
         fixedPriceProducts
       });
     } catch (err) {

@@ -1,5 +1,6 @@
 const TaxCoupon = require('../models/TaxCoupon');
 const crypto = require('node:crypto');
+const fiscalConfig = require('../config/fiscalConfig');
 
 /**
  * TaxController
@@ -10,15 +11,15 @@ const crypto = require('node:crypto');
 class TaxController {
   constructor() {
     this.companyInfo = {
-      tradeName: 'PÔR DO AÇAÍ - AÇAITERIA & SORVETES ARTESANAIS',
-      legalName: 'GLEICIANE B BORGES AÇAITERIA LTDA',
-      cnpj: '48.912.834/0001-90',
-      ie: '109.843.912.110', // Inscrição Estadual
-      im: '87.491.203',       // Inscrição Municipal
-      address: 'Av. Beira Rio, 1200 - Orla Central',
-      city: 'Belém - PA',
-      cep: '66000-000',
-      ufCode: '15' // Pará
+      tradeName: fiscalConfig.tradeName,
+      legalName: fiscalConfig.legalName,
+      cnpj: fiscalConfig.cnpj,
+      ie: fiscalConfig.ie,
+      im: fiscalConfig.im,
+      address: fiscalConfig.address.full,
+      city: `${fiscalConfig.address.city} - ${fiscalConfig.address.state}`,
+      cep: fiscalConfig.address.cep,
+      ufCode: fiscalConfig.ufCode
     };
   }
 

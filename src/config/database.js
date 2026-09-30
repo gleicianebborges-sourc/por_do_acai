@@ -107,35 +107,47 @@ function initializeDatabase() {
     return initializeDatabase();
   }
 
-  // Seed default products if empty
-  const count = db.prepare('SELECT COUNT(*) as count FROM products').get().count;
-  if (count === 0) {
-    const insertProduct = db.prepare(`
-      INSERT INTO products (name, is_variable_price, default_price, ncm_code, category, image_emoji)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
+  // Sync requested catalog products (Base Açaí, Bebidas Rápidas, Adicionais Premium)
+  const expectedItems = [
+    // Variable Price Items (1. Escolha a Base do Açaí)
+    { name: 'Açaí Tradicional (Manual / Quilo)', is_var: 1, price: 0.0, ncm: '0811.90.00', cat: 'acai', emoji: '🍇' },
+    { name: 'Açaí Trufado Especial (Manual)', is_var: 1, price: 0.0, ncm: '0811.90.00', cat: 'acai', emoji: '🍫' },
+    { name: 'Creme de Cupuaçu Puro (Manual)', is_var: 1, price: 0.0, ncm: '0811.90.00', cat: 'acai', emoji: '🥥' },
+    { name: 'Sorvete Artesanal Buffet (Manual)', is_var: 1, price: 0.0, ncm: '2105.00.10', cat: 'acai', emoji: '🍨' },
 
-    const seedItems = [
-      // Variable Price Items (Numpad input / Açaí montado)
-      { name: 'Açaí Tradicional (Manual / Quilo)', is_var: 1, price: 0.0, ncm: '0811.90.00', cat: 'acai', emoji: '🍇' },
-      { name: 'Açaí Trufado Especial (Manual)', is_var: 1, price: 0.0, ncm: '0811.90.00', cat: 'acai', emoji: '🍫' },
-      { name: 'Creme de Cupuaçu Puro (Manual)', is_var: 1, price: 0.0, ncm: '0811.90.00', cat: 'acai', emoji: '🥥' },
-      { name: 'Sorvete Artesanal Buffet (Manual)', is_var: 1, price: 0.0, ncm: '2105.00.10', cat: 'acai', emoji: '🍨' },
+    // a) Bebidas Rápidas (Fixed Price / 1-Click to Cart)
+    { name: 'Água Mineral sem Gás', is_var: 0, price: 4.00, ncm: '2201.10.00', cat: 'bebidas', emoji: '💧' },
+    { name: 'Água Mineral com Gás', is_var: 0, price: 5.00, ncm: '2201.10.00', cat: 'bebidas', emoji: '🫧' },
+    { name: 'Coca-Cola Lata 350ml', is_var: 0, price: 6.00, ncm: '2202.10.00', cat: 'bebidas', emoji: '🥤' },
+    { name: 'Guaraná Antarctica Lata', is_var: 0, price: 6.00, ncm: '2202.10.00', cat: 'bebidas', emoji: '🥤' },
+    { name: 'Red Bull Energy 250ml', is_var: 0, price: 14.00, ncm: '2202.99.00', cat: 'bebidas', emoji: '⚡' },
+    { name: 'Suco em Lata 350ml', is_var: 0, price: 7.00, ncm: '2009.12.00', cat: 'bebidas', emoji: '🍊' },
 
-      // Fixed Price Quick-Add Items
-      { name: 'Água Mineral sem Gás 500ml', is_var: 0, price: 4.50, ncm: '2201.10.00', cat: 'bebidas', emoji: '💧' },
-      { name: 'Água Mineral com Gás 500ml', is_var: 0, price: 5.00, ncm: '2201.10.00', cat: 'bebidas', emoji: '🫧' },
-      { name: 'Coca-Cola Lata 350ml', is_var: 0, price: 6.50, ncm: '2202.10.00', cat: 'bebidas', emoji: '🥤' },
-      { name: 'Guaraná Antarctica 350ml', is_var: 0, price: 6.00, ncm: '2202.10.00', cat: 'bebidas', emoji: '🥤' },
-      { name: 'Suco Natural Laranja 300ml', is_var: 0, price: 8.50, ncm: '2009.12.00', cat: 'bebidas', emoji: '🍊' },
-      { name: 'Red Bull Energy 250ml', is_var: 0, price: 12.00, ncm: '2202.99.00', cat: 'bebidas', emoji: '⚡' },
-      { name: 'Nutella Pura Dose Extra', is_var: 0, price: 7.00, ncm: '1806.90.00', cat: 'toppings', emoji: '🌰' },
-      { name: 'Casquinha Waffle Crocante', is_var: 0, price: 3.50, ncm: '1905.32.00', cat: 'toppings', emoji: '🧇' },
-      { name: 'Paçoca Rolha Dose', is_var: 0, price: 2.00, ncm: '2008.11.00', cat: 'toppings', emoji: '🥜' }
-    ];
+    // b) Adicionais Premium & Balcão (Fixed Price / 1-Click to Cart)
+    { name: 'Dose Extra de Nutella', is_var: 0, price: 5.00, ncm: '1806.90.00', cat: 'adicionais', emoji: '🌰' },
+    { name: 'Chocolate KitKat Unid.', is_var: 0, price: 4.50, ncm: '1806.32.10', cat: 'adicionais', emoji: '🍫' },
+    { name: 'Bombom Ouro Branco Unid.', is_var: 0, price: 3.00, ncm: '1806.90.00', cat: 'adicionais', emoji: '🍬' },
+    { name: 'Porção de Morango Fresco', is_var: 0, price: 4.00, ncm: '0810.10.00', cat: 'adicionais', emoji: '🍓' },
+    { name: 'Creme de Ninho Extra', is_var: 0, price: 3.50, ncm: '1901.90.90', cat: 'adicionais', emoji: '🥛' },
+    { name: 'Sacola Térmica Viagem', is_var: 0, price: 3.00, ncm: '3923.29.90', cat: 'adicionais', emoji: '🛍️' }
+  ];
 
-    for (const item of seedItems) {
-      insertProduct.run(item.name, item.is_var, item.price, item.ncm, item.cat, item.emoji);
+  for (const item of expectedItems) {
+    const existing = db.prepare('SELECT id FROM products WHERE name = ?').get(item.name);
+    if (existing) {
+      db.prepare('UPDATE products SET is_variable_price = ?, default_price = ?, ncm_code = ?, category = ?, image_emoji = ?, active = 1 WHERE id = ?')
+        .run(item.is_var, item.price, item.ncm, item.cat, item.emoji, existing.id);
+    } else {
+      db.prepare('INSERT INTO products (name, is_variable_price, default_price, ncm_code, category, image_emoji, active) VALUES (?, ?, ?, ?, ?, ?, 1)')
+        .run(item.name, item.is_var, item.price, item.ncm, item.cat, item.emoji);
+    }
+  }
+
+  // Deactivate any legacy items not in expected catalog
+  const allProds = db.prepare('SELECT id, name FROM products').all();
+  for (const p of allProds) {
+    if (!expectedItems.some(i => i.name === p.name)) {
+      db.prepare('UPDATE products SET active = 0 WHERE id = ?').run(p.id);
     }
   }
 

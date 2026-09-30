@@ -43,6 +43,10 @@
         <span>🕒</span> Histórico
       </button>
 
+      <button id="btn-open-closing" class="header-btn" title="Fechamento de Caixa Diário" style="background: rgba(147, 51, 234, 0.2); border-color: rgba(168, 85, 247, 0.4); color: #f3e8ff;">
+        <span>🔒</span> Fechamento
+      </button>
+
       <button id="btn-logout" class="header-btn" title="Encerrar Sessão do Operador" style="color: #fca5a5; border-color: rgba(244,63,94,0.3);">
         <span>🚪</span> Sair
       </button>
@@ -82,14 +86,33 @@
       <article class="numpad-container-card">
         <div class="numpad-layout">
 
-          <!-- VARIABLE PRODUCT BASE SELECTOR -->
+          <!-- VARIABLE PRODUCT BASE SELECTOR & QUICK-ADD CATEGORIES -->
           <div class="variable-prods-column">
+            <!-- 1. BASE DO AÇAÍ -->
             <div class="section-label">
               <span>🍧 1. Escolha a Base do Açaí</span>
               <span style="font-size: 0.72rem; color: var(--text-dim);">Preço Variável / Balança Manual</span>
             </div>
 
             <div class="var-prods-grid" id="var-prods-grid">
+              <!-- Dynamically populated by app.js -->
+            </div>
+
+            <!-- a) BEBIDAS RÁPIDAS -->
+            <div class="section-label" style="margin-top: 1rem;">
+              <span>🥤 Bebidas Rápidas</span>
+              <span style="font-size: 0.72rem; color: #34d399; font-weight: 600;">1-Toque no Carrinho</span>
+            </div>
+            <div class="quick-category-grid" id="beverages-grid">
+              <!-- Dynamically populated by app.js -->
+            </div>
+
+            <!-- b) ADICIONAIS PREMIUM & BALCÃO -->
+            <div class="section-label" style="margin-top: 1rem;">
+              <span>🍫 Adicionais Premium & Balcão</span>
+              <span style="font-size: 0.72rem; color: #34d399; font-weight: 600;">1-Toque no Carrinho</span>
+            </div>
+            <div class="quick-category-grid" id="additions-grid">
               <!-- Dynamically populated by app.js -->
             </div>
           </div>
@@ -140,16 +163,6 @@
             </button>
           </div>
 
-        </div>
-      </article>
-
-      <!-- FIXED-PRICE QUICK-ADD ITEMS -->
-      <article class="fixed-products-card">
-        <div class="section-label" style="margin-bottom: 0.75rem;">
-          <span>🥤 3. Bebidas & Adicionais (Preço Fixo - Toque Rápido)</span>
-        </div>
-        <div class="fixed-grid" id="fixed-products-grid">
-          <!-- Dynamically populated by app.js -->
         </div>
       </article>
 
@@ -394,10 +407,97 @@
   </div>
 
 
+  <!-- ================= DAILY CLOSING MODAL ================= -->
+  <div class="modal-overlay" id="closing-modal" role="dialog" aria-modal="true" aria-labelledby="modal-closing-title">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 id="modal-closing-title">🔒 Fechamento de Caixa Diário</h3>
+        <button class="btn-close-modal" id="btn-close-closing" aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem;">
+        <!-- DYNAMIC RECIPIENT CONFIRMATION NOTE -->
+        <div class="closing-recipient-note" id="closing-recipient-note" style="background: rgba(147, 51, 234, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: var(--radius-md); padding: 0.95rem 1.15rem; margin-bottom: 1.25rem; font-size: 0.88rem; color: #e9d5ff;">
+          <div style="font-weight: 700; color: #fbcfe8; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+            <span>📧</span> Destinatário do Relatório:
+          </div>
+          <div>
+            O relatório do dia e a planilha serão enviados para: <strong id="closing-user-email" style="color: #38bdf8; text-decoration: underline;">[carregando...]</strong>
+          </div>
+          <div style="font-size: 0.75rem; color: #a5b4fc; margin-top: 0.35rem;">
+            🛡️ <em>Obtido com segurança a partir da sua sessão ativa de login (Art. 7º e 37 da LGPD).</em>
+          </div>
+        </div>
+
+        <!-- FINANCIAL SUMMARY PREVIEW -->
+        <div id="closing-summary-box" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.1rem; margin-bottom: 1.25rem;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;">
+            📊 Apuração de Vendas do Turno
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div style="background: rgba(255,255,255,0.04); padding: 0.65rem 0.85rem; border-radius: 6px;">
+              <div style="font-size: 0.75rem; color: #94a3b8;">Total de Vendas:</div>
+              <div id="closing-sales-count" style="font-size: 1.1rem; font-weight: 800; color: #ffffff;">0</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.04); padding: 0.65rem 0.85rem; border-radius: 6px;">
+              <div style="font-size: 0.75rem; color: #94a3b8;">Faturamento Bruto:</div>
+              <div id="closing-gross-total" style="font-size: 1.2rem; font-weight: 800; color: #34d399; font-family: var(--font-mono);">R$ 0,00</div>
+            </div>
+          </div>
+
+          <!-- Breakdown by payment method -->
+          <div style="font-size: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.75rem;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #cbd5e1;">⚡ PIX:</span>
+              <span id="closing-pix-total" style="font-family: var(--font-mono); font-weight: 700; color: #bae6fd;">R$ 0,00</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #cbd5e1;">💳 Cartão de Crédito:</span>
+              <span id="closing-credit-total" style="font-family: var(--font-mono); font-weight: 700; color: #bae6fd;">R$ 0,00</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #cbd5e1;">🏦 Cartão de Débito:</span>
+              <span id="closing-debit-total" style="font-family: var(--font-mono); font-weight: 700; color: #bae6fd;">R$ 0,00</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #cbd5e1;">💵 Dinheiro em Espécie:</span>
+              <span id="closing-cash-total" style="font-family: var(--font-mono); font-weight: 700; color: #bae6fd;">R$ 0,00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUCCESS ALERT TOAST (HIDDEN UNTIL DISPATCH) -->
+        <div id="closing-success-toast" style="display: none; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #6ee7b7; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; font-size: 0.85rem; line-height: 1.45;">
+          <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 0.25rem;">
+            ✅ Fechamento Concluído com Sucesso!
+          </div>
+          <div id="closing-success-msg">
+            O relatório e a planilha CSV foram despachados para seu e-mail.
+          </div>
+          <div style="margin-top: 0.75rem;">
+            <button id="btn-download-csv" style="background: #047857; color: white; border: none; padding: 0.45rem 0.85rem; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">
+              📥 Baixar Planilha (.CSV)
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" class="btn-secondary" id="btn-cancel-closing">Cancelar</button>
+          <button type="button" class="btn-finalize-sale" id="btn-confirm-closing" style="padding: 0.75rem 1.4rem;">
+            <span>✓ Confirmar & Enviar Fechamento</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <!-- SCRIPTS -->
   <script src="js/agentLogs.js"></script>
   <script src="js/receipt.js"></script>
   <script src="js/checkout.js"></script>
+  <script src="js/closing.js"></script>
   <script src="js/copilot.js"></script>
   <script src="js/numpad.js"></script>
   <script src="js/app.js"></script>

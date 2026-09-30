@@ -1,6 +1,7 @@
 const Sale = require('../models/Sale');
 const Product = require('../models/Product');
 const orchestrator = require('../services/SkillOrchestrator');
+const fiscalConfig = require('../config/fiscalConfig');
 
 /**
  * CheckoutController
@@ -79,10 +80,15 @@ class CheckoutController {
       // Broadcast event to Skill Orchestrator (triggers FiscalTaxSkill + DigitalReceiptSkill hooks)
       const orchestratorResult = await orchestrator.handleCheckout(sale, verifiedItems);
 
+      const approxTax = Math.round(calculatedTotal * (fiscalConfig.ibptTaxRate / 100) * 100) / 100;
+
       res.status(201).json({
         success: true,
-        message: 'Venda finalizada e habilidades de inteligência executadas com sucesso!',
+        message: 'Venda finalizada com sucesso!',
         sale,
+        companyInfo: fiscalConfig,
+        approxTax,
+        ibptTaxRate: fiscalConfig.ibptTaxRate,
         changeDue,
         taxResult: orchestratorResult.taxResult.data,
         agentLogId: orchestratorResult.taxResult.logId

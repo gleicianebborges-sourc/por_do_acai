@@ -47,36 +47,47 @@ class ReceiptView {
   }
 
   formatCurrency(val) {
-    return `R$ ${Number(val).toFixed(2).replace('.', ',')}`;
+    const num = Number(val);
+    if (isNaN(num)) return 'R$ 0,00';
+    return `R$ ${num.toFixed(2).replace('.', ',')}`;
   }
 
   render(data) {
-    const sale = data.sale;
-    const company = data.companyInfo || {
-      tradeName: 'PÔR DO AÇAÍ',
-      legalName: 'GLEICIANE B BORGES AÇAITERIA LTDA',
+    const sale = data.sale || {};
+    const company = data.companyInfo || window.posFiscalConfig || {
+      tradeName: 'Pôr do Açaí',
+      legalName: 'PÔR DO AÇAÍ COMÉRCIO DE ALIMENTOS LTDA',
       cnpj: '48.912.834/0001-90',
       ie: '109.843.912.110',
-      address: 'Av. Beira Rio, 1200 - Belém - PA'
+      address: { full: 'Av. Beira Rio, 1200 - Orla Central - Belém - PA' },
+      sefazPortalUrl: 'www.sefaz.pa.gov.br/nfce/consulta',
+      ibptTaxRate: 22.85,
+      environmentLabel: 'AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL'
     };
 
     const formattedKey = data.formattedKey || (data.taxCoupon ? data.taxCoupon.access_key : '');
     const protocolNumber = data.protocolNumber || (data.taxCoupon ? data.taxCoupon.protocol_number : '');
     const dateFormatted = new Date(sale.timestamp || Date.now()).toLocaleString('pt-BR');
+    const addressStr = typeof company.address === 'object' ? (company.address.full || `${company.address.street}, ${company.address.number}`) : company.address;
 
     let itemsRows = '';
-    sale.items.forEach((item, index) => {
-      const isWeight = item.quantity_or_weight < 5 && item.quantity_or_weight.toString().includes('.');
-      const qtyStr = isWeight 
-        ? `${Number(item.quantity_or_weight).toFixed(3)}kg`
-        : `${item.quantity_or_weight} un`;
+    (sale.items || []).forEach((item, index) => {
+      const rawPrice = item.final_price !== undefined ? item.final_price : item.calculated_price;
+      const price = Number(rawPrice);
+      const safePrice = isNaN(price) ? 0.0 : price;
+
+      const rawQty = item.quantity !== undefined ? item.quantity : item.quantity_or_weight;
+      const qty = Number(rawQty) || 1;
+      const qtyStr = `${qty} un`;
+
+      const name = item.product_name || item.name || 'Produto';
 
       itemsRows += `
         <tr>
           <td>${String(index + 1).padStart(3, '0')}</td>
-          <td><strong>${item.product_name || item.name || 'Produto'}</strong></td>
+          <td><strong>${name}</strong></td>
           <td>${qtyStr}</td>
-          <td style="text-align: right;">${this.formatCurrency(item.calculated_price)}</td>
+          <td style="text-align: right;">${this.formatCurrency(safePrice)}</td>
         </tr>
       `;
     });
@@ -88,16 +99,26 @@ class ReceiptView {
       'CASH': 'Dinheiro em Espécie'
     };
 
+    // Calculate dynamic IBPT taxes based on configured percentage
+    const taxRate = Number(company.ibptTaxRate || data.ibptTaxRate || 22.85);
+    const saleTotal = Number(sale.total_amount || 0);
+    const approxTax = Number(data.approxTax !== undefined ? data.approxTax : (saleTotal * (taxRate / 100)));
+
     // Simulated QR Code SVG for SEFAZ
     const qrSvg = this.generateSimulatedQRCode();
 
     this.container.innerHTML = `
       <div class="receipt-wrapper" id="printable-nfc-e">
+        <!-- SAFETY WATERMARK BANNER (HOMOLOGATION / TEST MODE) -->
+        <div class="receipt-homologation-banner">
+          ⚠️ ${company.environmentLabel || 'AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL'} ⚠️
+        </div>
+
         <div class="receipt-header">
           <h4>${company.tradeName}</h4>
           <div>${company.legalName}</div>
           <div>CNPJ: ${company.cnpj} - IE: ${company.ie}</div>
-          <div>${company.address}</div>
+          <div>${addressStr}</div>
           <div style="margin-top: 6px; font-weight: bold;">
             DANFE NFC-e - Documento Auxiliar da<br>
             Nota Fiscal de Consumidor Eletrônica
@@ -122,11 +143,11 @@ class ReceiptView {
         <div class="receipt-totals">
           <div class="receipt-line">
             <span>Qtd. Total de Itens:</span>
-            <span>${sale.items.length}</span>
+            <span>${(sale.items || []).length}</span>
           </div>
           <div class="receipt-line bold">
             <span>VALOR TOTAL R$:</span>
-            <span>${this.formatCurrency(sale.total_amount)}</span>
+            <span>${this.formatCurrency(saleTotal)}</span>
           </div>
           <div class="receipt-line">
             <span>Forma de Pagamento:</span>
@@ -135,7 +156,7 @@ class ReceiptView {
           ${sale.payment_method === 'CASH' ? `
             <div class="receipt-line">
               <span>Valor Recebido:</span>
-              <span>${this.formatCurrency(sale.amount_received || sale.total_amount)}</span>
+              <span>${this.formatCurrency(sale.amount_received || saleTotal)}</span>
             </div>
             <div class="receipt-line">
               <span>Troco:</span>
@@ -146,14 +167,14 @@ class ReceiptView {
 
         <div style="font-size: 0.72rem; text-align: center; margin: 6px 0;">
           Tributos Totais Incidentes (Lei Federal 12.741/2012):<br>
-          <strong>${this.formatCurrency(sale.total_amount * 0.2285)} (22,85% Fonte: IBPT)</strong>
+          <strong>${this.formatCurrency(approxTax)} (${taxRate.toFixed(2).replace('.', ',')}% Fonte: IBPT)</strong>
         </div>
 
         <div class="sefaz-info-box">
           <div><strong>EMISSÃO NORMAL</strong></div>
-          <div>NFC-e Nº ${String(sale.id).padStart(9, '0')} - Série 001</div>
+          <div>NFC-e Nº ${String(sale.id || 1).padStart(9, '0')} - Série ${company.serie || '001'}</div>
           <div>Data/Hora: ${dateFormatted}</div>
-          <div>Protocolo de Autorização: ${protocolNumber}</div>
+          <div>Protocolo de Autorização: ${protocolNumber || '11526' + Date.now().toString().slice(-10)}</div>
 
           <div style="margin-top: 8px;"><strong>CHAVE DE ACESSO</strong></div>
           <div class="access-key-box">${formattedKey}</div>
@@ -162,7 +183,7 @@ class ReceiptView {
             ${qrSvg}
             <div style="font-size: 0.65rem; color: #444; margin-top: 3px;">
               Consulte pela Chave de Acesso em:<br>
-              <strong>www.sefaz.pa.gov.br/nfce/consulta</strong>
+              <strong>${company.sefazPortalUrl || 'www.sefaz.pa.gov.br/nfce/consulta'}</strong>
             </div>
           </div>
 

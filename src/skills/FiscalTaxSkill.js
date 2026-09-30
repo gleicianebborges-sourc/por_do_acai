@@ -1,4 +1,5 @@
 const BaseSkill = require('./BaseSkill');
+const fiscalConfig = require('../config/fiscalConfig');
 
 /**
  * FiscalTaxSkill
@@ -11,12 +12,12 @@ class FiscalTaxSkill extends BaseSkill {
   constructor() {
     super('FiscalTaxSkill', 'Emissão automática de Cupom Fiscal Eletrônico (NFC-e) na SEFAZ');
     this.company = {
-      tradeName: 'PÔR DO AÇAÍ',
-      legalName: 'GLEICIANE B BORGES AÇAITERIA LTDA',
-      cnpj: '48.912.834/0001-90',
-      ie: '109.843.912.110',
-      ufCode: '15', // Pará
-      serie: '001'
+      tradeName: fiscalConfig.tradeName,
+      legalName: fiscalConfig.legalName,
+      cnpj: fiscalConfig.cnpj,
+      ie: fiscalConfig.ie,
+      ufCode: fiscalConfig.ufCode,
+      serie: fiscalConfig.serie
     };
   }
 

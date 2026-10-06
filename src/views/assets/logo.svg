@@ -1,0 +1,34 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="acaiBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#300B4D" />
+      <stop offset="100%" stop-color="#24073B" />
+    </linearGradient>
+    <linearGradient id="sunsetGold" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#FDE047" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" rx="90" fill="url(#acaiBg)" />
+  <g transform="translate(300, 305) scale(1.35)">
+    <!-- Sol Poente Geométrico -->
+    <path d="M -130 0 A 130 130 0 0 1 130 0 Z" fill="url(#sunsetGold)" />
+    <!-- Raios Solares Geométricos Concêntricos -->
+    <circle cx="0" cy="0" r="148" fill="none" stroke="#F59E0B" stroke-width="3" stroke-dasharray="10 14" opacity="0.65" />
+    <circle cx="0" cy="0" r="165" fill="none" stroke="#F59E0B" stroke-width="2" opacity="0.45" />
+    <!-- Linha do Horizonte -->
+    <line x1="-180" y1="0" x2="180" y2="0" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" />
+    <!-- Ondas Fluidas do Horizonte -->
+    <path d="M -160 22 C -120 4, -90 40, -50 22 C -10 4, 20 40, 60 22 C 100 4, 130 40, 160 22" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" />
+    <path d="M -140 44 C -105 28, -80 62, -45 44 C -10 26, 15 62, 50 44 C 85 26, 110 62, 140 44" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" opacity="0.8" />
+    <!-- Cuia de Açaí Minimalista -->
+    <path d="M -75 75 Q 0 160 75 75 Z" fill="#300B4D" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" />
+    <line x1="-80" y1="75" x2="80" y2="75" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" />
+    <!-- Frutos de Açaí -->
+    <circle cx="-16" cy="60" r="13" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2.5" />
+    <circle cx="16" cy="60" r="13" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2.5" />
+    <circle cx="0" cy="40" r="15" fill="#FBBF24" stroke="#FFFFFF" stroke-width="2.5" />
+    <!-- Folha Botânica de Açaizeiro -->
+    <path d="M 12 34 C 28 18 48 22 54 12 C 44 30 32 42 16 42 Z" fill="#F59E0B" />
+  </g>
+</svg>

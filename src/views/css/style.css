@@ -1268,142 +1268,71 @@ body {
    CONFIGURAÇÃO DE IMPRESSÃO TÉRMICA CONTÍNUA (NFC-e 80mm / 58mm)
    ======================================================== */
 
-/* 1. Define o tamanho físico da bobina térmica e elimina margens do navegador */
+/* 1. Define o tamanho exato da folha para a bobina da impressora (deve ficar fora do @media print) */
 @page {
-  /* Bobina padrão 80mm com altura automática contínua */
-  size: 80mm auto;
-  margin: 0;
+  size: 80mm auto; /* Ajuste para 58mm se sua impressora for menor */
+  margin: 0mm;
 }
-
-/* NOTA: Para impressoras de 58mm, basta alternar para:
-@page {
-  size: 58mm auto;
-  margin: 0;
-}
-*/
 
 @media print {
-  /* Zera margens da página e evita que o navegador reserve altura para o layout do app */
+  /* 2. Esconde o restante da página (fundo, botões, cabeçalhos do sistema) */
+  body * {
+    visibility: hidden;
+    height: 0;
+  }
+
+  /* 3. Garante que o body e as divs estruturais do modal não quebrem o layout na impressão */
   html, body {
     width: 80mm !important;
     max-width: 80mm !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: #ffffff !important;
-    color: #000000 !important;
-    height: auto !important;
-    min-height: auto !important;
+    background-color: #ffffff !important;
+    color: #000000 !important; /* Força o texto a ficar preto (remover o cinza do modal) */
     overflow: visible !important;
+    height: auto !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Oculta completamente elementos que não fazem parte do cupom fiscal */
-  body > *:not(#receipt-modal),
-  header,
-  nav,
-  aside,
-  main,
-  .pos-header,
-  .pos-container,
-  .catalog-grid,
-  .cart-panel,
-  .modal-overlay:not(#receipt-modal),
-  .modal-header,
-  .btn-close-modal,
-  .receipt-actions,
-  #btn-print-action,
-  #btn-new-sale-action,
-  button {
-    display: none !important;
-    height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* Reseta contêineres do modal para que se comportem como fluxo normal do papel */
-  .modal-overlay#receipt-modal {
-    position: static !important;
-    display: block !important;
-    background: transparent !important;
+  html, body, #receipt-modal, .modal-box, .modal-body, #receipt-content-area, .receipt-wrapper {
+    visibility: visible !important;
+    overflow: visible !important;
+    position: static !important; /* Remove travas de posição fixa/absoluta */
+    background: none !important;  /* Remove fundos escuros do modal */
+    box-shadow: none !important;
+    border: none !important;
     width: 100% !important;
     height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: visible !important;
-    box-shadow: none !important;
-    border: none !important;
-    backdrop-filter: none !important;
   }
 
-  .modal-box {
-    position: static !important;
-    display: block !important;
-    max-width: 100% !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+  /* Oculta botões e cabeçalho do modal */
+  .modal-header,
+  .btn-close-modal,
+  #btn-print-action,
+  #btn-new-sale-action,
+  .receipt-actions {
+    display: none !important;
   }
 
-  .modal-body {
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
+  /* 4. Força APENAS o cupom fiscal a ficar visível e ocupar o espaço correto */
+  #printable-nfc-e, 
+  #printable-nfc-e * {
+    visibility: visible !important;
+    height: auto !important; /* Impede que o height: 0 do body * achate os elementos do cupom */
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
-  #receipt-content-area {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-  }
-
-  /* Estilização do Cupom Fiscal para Impressora Térmica */
+  /* 5. Estilização e espaçamento do cupom térmico */
   .receipt-wrapper {
-    position: static !important;
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
     padding: 2mm 3mm !important;
     box-sizing: border-box !important;
-    background: #ffffff !important;
-    color: #000000 !important;
-    box-shadow: none !important;
-    border: none !important;
     font-family: 'Courier New', Courier, monospace !important;
     font-size: 8.5pt !important;
     line-height: 1.25 !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
-  /* Impede quebras de página artificiais em todos os blocos internos */
-  .receipt-wrapper *,
-  .receipt-header,
-  .receipt-items-table,
-  .receipt-items-table tr,
-  .receipt-items-table td,
-  .receipt-items-table th,
-  .receipt-totals,
-  .sefaz-info-box,
-  .access-key-box,
-  .receipt-qr-frame,
-  .receipt-homologation-banner {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    page-break-after: auto !important;
-    break-after: auto !important;
-    page-break-before: auto !important;
-    break-before: auto !important;
-  }
-
-  /* Otimização visual para contraste preto e branco em bobina térmica */
-  .receipt-header h4 {
-    font-size: 10pt !important;
-    color: #000000 !important;
   }
 
   .receipt-homologation-banner {
